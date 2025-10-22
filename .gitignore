@@ -1,7 +1,46 @@
-bin
-include
-lib
-.Python
-tests/
-.envrc
-__pycache__
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Pytest cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# Byte-compiled / optimized / DLL files
+*.so
+*.dll
+*.dylib
+
+# Environment files
+.env
+*.env
+
+# Local config
+instance/
+*.sqlite3
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Reports and temp files
+TESTS_REPORT.md
+PERF_REPORT.md
+!README.md  # keep README
