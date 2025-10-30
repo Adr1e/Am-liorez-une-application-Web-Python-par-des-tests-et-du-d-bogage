@@ -49,4 +49,40 @@
     We also like to show how well we're testing, so there's a module called 
     [coverage](https://coverage.readthedocs.io/en/coverage-5.1/) you should add to your project.
 
-# Am-liorez-une-application-Web-Python-par-des-tests-et-du-d-bogage
+
+
+# 1. Activer l'environnement virtuel
+source .venv/bin/activate
+
+# 2. Vérifier l'installation des dépendances
+pip install -r requirements.txt
+
+# 3. Lancer l'application Flask
+export FLASK_APP=server.py FLASK_DEBUG=0
+flask run
+# (Laisser ce terminal ouvert, l'application tourne sur http://127.0.0.1:5000)
+
+# 4. Ouvrir un nouveau terminal pour tester les routes principales
+curl -i http://127.0.0.1:5000/
+curl -s http://127.0.0.1:5000/points | python -m json.tool
+
+# 5. Lancer tous les tests unitaires et d'intégration
+pytest -v
+
+# 6. Vérifier la couverture du code
+coverage run -m pytest
+coverage report -m
+
+# 7. (Optionnel) Générer le rapport HTML de la couverture
+coverage html
+open htmlcov/index.html
+
+# 8. Lancer les tests de performance avec Locust (interface web)
+locust -H http://127.0.0.1:5000
+# Ouvrir http://localhost:8089
+# Configurer : 6 utilisateurs, spawn rate = 1, durée ~2 minutes
+
+# 9. Vérifier les résultats de performance
+à faire
+# 10. Nettoyer les fichiers temporaires et caches (fin de démo)
+à faire

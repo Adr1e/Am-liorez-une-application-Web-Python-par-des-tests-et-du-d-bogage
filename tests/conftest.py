@@ -1,3 +1,7 @@
+# this file provides shared pytest fixtures for all tests
+# set up a temparary environment, copies json data
+# creates a flask test client for simulating HTTP requests
+
 import os, sys, shutil
 import pytest
 
