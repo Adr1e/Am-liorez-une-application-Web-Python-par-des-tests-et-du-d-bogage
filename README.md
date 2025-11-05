@@ -50,35 +50,114 @@
     [coverage](https://coverage.readthedocs.io/en/coverage-5.1/) you should add to your project.
 
 
+# Améliorez une application Web Python par des tests et du débogage
 
-# 1. Activer l'environnement virtuel
-source .venv/bin/activate
+## 1. Description du projet
 
-# 2. Vérifier l'installation des dépendances
+Ce projet vise à fiabiliser une application web Flask en appliquant les bonnes pratiques de tests et de débogage.  
+L’application **Güdlft Registration** permet à des clubs de réserver des places pour des compétitions sportives.  
+
+L’objectif est de garantir un code stable, maintenable et testé, conformément aux exigences du parcours OpenClassrooms « Développeur Python ».
+
+---
+
+## 2. Objectifs techniques
+
+- Mise en place d’une stratégie de tests complète (unitaires et intégration).  
+- Application des principes TDD (Test Driven Development).  
+- Détection et correction des bugs existants.  
+- Suivi de la couverture de code via `pytest-cov`.  
+- Analyse de performance avec **Locust**.  
+
+---
+
+## 3. Installation
+
+### Prérequis
+
+- Python ≥ 3.10  
+- Flask ≥ 3.x  
+- Pytest ≥ 8.x  
+
+### Étapes d’installation
+
+```bash
+git clone https://github.com/Adr1e/Am-liorez-une-application-Web-Python-par-des-tests-et-du-d-bogage.git
+cd Am-liorez-une-application-Web-Python-par-des-tests-et-du-d-bogage
+python -m venv .venv
+source .venv/bin/activate      # macOS / Linux
+.venv\Scripts\activate         # Windows
 pip install -r requirements.txt
+```
 
-# 3. Lancer l'application Flask
-export FLASK_APP=server.py FLASK_DEBUG=0
-flask run
-# (Laisser ce terminal ouvert, l'application tourne sur http://127.0.0.1:5000)
+---
 
-# 4. Ouvrir un nouveau terminal pour tester les routes principales
-curl -i http://127.0.0.1:5000/
-curl -s http://127.0.0.1:5000/points | python -m json.tool
+## 4. Lancer l’application
 
-# 5. Lancer tous les tests unitaires et d'intégration
+```bash
+python server.py
+```
+
+Application disponible sur :  
+http://localhost:5000
+
+---
+
+## 5. Lancer les tests
+
+### Tous les tests
+```bash
 pytest -v
+```
 
-# 6. Vérifier la couverture du code
-coverage run -m pytest
-coverage report -m
+### Couverture
+```bash
+pytest --cov=server --cov-report=term-missing
+```
 
-# 8. Lancer les tests de performance avec Locust (interface web)
-locust -H http://127.0.0.1:5000
-# Ouvrir http://localhost:8089
-# Configurer : 6 utilisateurs, spawn rate = 1, durée ~2 minutes
+### Rapport HTML
+```bash
+pytest --cov=server --cov-report=html
+```
 
-# 9. Vérifier les résultats de performance
-à faire
-# 10. Nettoyer les fichiers temporaires et caches (fin de démo)
-à faire
+Ouvrir ensuite `htmlcov/index.html` dans un navigateur.
+
+---
+
+## 6. Résultats
+
+- **Nombre total de tests :** 30  
+- **Taux de réussite :** 100 %  
+- **Couverture globale :** 97 %  
+- **Ratio unitaires/intégration :** conforme (2:1)  
+- **Application :** stable et conforme aux spécifications.
+
+Les rapports complets sont disponibles ici :
+- [Rapport de tests](./TEST_REPORT.md)
+- [Rapport de performance](./PERF_REPORT.md)
+
+---
+
+## 7. Structure du projet
+
+```
+.
+├── server.py
+├── tests/
+│   ├── conftest.py
+│   ├── unit/
+│   └── integration/
+├── .coveragerc
+├── pytest.ini
+├── TEST_REPORT.md
+├── PERF_REPORT.md
+└── README.md
+```
+
+---
+
+## 8. Auteur
+
+Projet réalisé par **Adrien Fischer**  
+Formation : *OpenClassrooms – Développeur Python*  
+Projet : *Améliorez une application Web Python par des tests et du débogage*
