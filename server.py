@@ -58,6 +58,28 @@ def as_int(value, default: int = 0) -> int:
     except Exception:
         return default
 
+def can_book(points, requested):
+    # True if enough points and ≤12 places
+    return 1 <= requested <= 12 and points >= requested
+
+
+def sanitize_places(value):
+    # Convert to positive int or raise
+    try:
+        places = int(str(value).strip())
+    except Exception:
+        raise ValueError("Invalid input")
+    if places < 1:
+        raise ValueError("Places must be positive")
+    return places
+
+
+def calculate_remaining_places(total, booked):
+    # Return remaining or raise error
+    if booked < 0 or booked > total:
+        raise ValueError("Invalid booking numbers")
+    return total - booked
+
 
 app = Flask(__name__)
 app.secret_key = "something_special"

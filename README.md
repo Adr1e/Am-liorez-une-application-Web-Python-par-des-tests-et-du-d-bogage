@@ -73,10 +73,6 @@ pytest -v
 coverage run -m pytest
 coverage report -m
 
-# 7. (Optionnel) Générer le rapport HTML de la couverture
-coverage html
-open htmlcov/index.html
-
 # 8. Lancer les tests de performance avec Locust (interface web)
 locust -H http://127.0.0.1:5000
 # Ouvrir http://localhost:8089
