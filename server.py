@@ -1,6 +1,7 @@
 import json
 from typing import List, Dict, Optional
 from flask import Flask, render_template, request, redirect, flash, url_for, jsonify
+from datetime import datetime
 
 # File paths for JSON data
 CLUBS_PATH = "clubs.json"
@@ -81,6 +82,17 @@ def calculate_remaining_places(total: int, booked: int) -> int:
         raise ValueError("Invalid booking numbers")
     return total - booked
 
+def is_past(date_str: str) -> bool:
+    """Return True if competition date is in the past."""
+    try:
+        # Default format from original data set
+        dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        return dt < datetime.now()
+    except Exception:
+        # Safer: if invalid date, treat as past (non-bookable)
+        return True
+
+
 
 app = Flask(__name__)
 app.secret_key = "something_special"
@@ -104,7 +116,14 @@ def showSummary():
     if not club:
         flash("Unknown email.")
         return redirect(url_for("index"))
-    return render_template("welcome.html", club=club, competitions=competitions)
+
+    # Add a flag 'is_past' to each competition to hide booking if date is past
+    comps = []
+    for comp in competitions:
+        comp_copy = dict(comp)
+        comp_copy["is_past"] = is_past(comp_copy.get("date", ""))
+        comps.append(comp_copy)
+    return render_template("welcome.html", club=club, competitions=comps)
 
 
 @app.route("/book/<competition>/<club>")
