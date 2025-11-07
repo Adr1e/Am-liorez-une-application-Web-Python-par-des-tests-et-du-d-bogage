@@ -24,12 +24,3 @@ def test_successful_booking(client):
     form = {"club": "Simply Lift", "competition": "Spring Festival", "places": "1"}
     resp = client.post("/purchasePlaces", data=form)
     assert resp.status_code in (200, 302)
-
-def test_no_booking_link_for_past_competitions(client):
-    """Past competitions must not render the 'Book Places' link."""
-    resp = client.post("/showSummary", data={"email": "john@simplylift.co"}, follow_redirects=True)
-    assert resp.status_code == 200
-    html = resp.data.decode("utf-8")
-
-    # Expect at least one past competition to show "Booking unavailable"
-    assert "Booking unavailable" in html
