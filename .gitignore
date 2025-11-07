@@ -46,3 +46,5 @@ PERF_REPORT.md
 !README.md  # keep README
 
 perf_*.csv
+clubs.json
+competitions.json
