@@ -15,3 +15,4 @@ def test_points_displayed_on_welcome_page(client, mock_club, mock_competitions):
     response = client.post("/showSummary", data={"email": mock_club["email"]})
     assert response.status_code == 200
     assert str(mock_club["points"]) in response.text
+
