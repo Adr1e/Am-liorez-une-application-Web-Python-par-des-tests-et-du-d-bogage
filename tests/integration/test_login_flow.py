@@ -10,6 +10,7 @@ def test_login_invalid_email(client):
     resp = client.post("/showSummary", data={"email": "unknown@mail.com"})
     assert resp.status_code in (302, 303)
 
+# bug about the display
 def test_points_displayed_on_welcome_page(client, mock_club, mock_competitions):
     """Check that the user's points are displayed on the welcome page."""
     response = client.post("/showSummary", data={"email": mock_club["email"]})
