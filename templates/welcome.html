@@ -1,15 +1,19 @@
+<!-- templates/welcome.html -->
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Summary | GUDLFT Registration</title>
 </head>
 <body>
+    <!-- Simple header: who is logged in + logout -->
     <h2>Welcome, {{ club['email'] }}</h2>
     <p><strong>Club:</strong> {{ club['name'] }} — <strong>Points:</strong> {{ club['points'] }}</p>
-    <p><strong>Booked total:</strong> {{ total_booked }}/{{ total_cap }}</p>
+    <!-- Total booked across all competitions (cap 12) -->
+    <p><strong>Booked total:</strong> {{ booked_total }}/12</p>
     <a href="{{ url_for('logout') }}">Logout</a>
 
+    <!-- Flash messages (success/errors) -->
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <ul>
@@ -22,26 +26,21 @@
 
     <h3>Competitions:</h3>
     <ul>
-        {% for comp in competitions %}
+      {% for comp in competitions %}
         <li>
-            <strong>{{ comp['name'] }}</strong><br />
-            Date: {{ comp['date'] }}<br />
-            Number of Places: {{ comp['numberOfPlaces'] }}
+          <strong>{{ comp['name'] }}</strong><br />
+          Date: {{ comp['date'] }}<br />
+          Number of Places: {{ comp['numberOfPlaces'] }}<br />
 
-            {% set is_past = (comp['date'] < "2024-01-01") %} {# simple string check kept from previous behavior/tests #}
-
-            {% if is_past %}
-                — Booking unavailable
-            {% elif total_booked >= total_cap %}
-                — Limit reached ({{ total_cap }})
-            {% elif comp['numberOfPlaces']|int > 0 %}
-                <a href="{{ url_for('book', competition=comp['name'], club=club['name']) }}">Book Places</a>
-            {% else %}
-                — Sold out
-            {% endif %}
+          <!-- If competition is past OR no places left, do not show the booking link -->
+          {% if comp.is_past or (comp['numberOfPlaces']|int <= 0) %}
+            — Booking unavailable
+          {% else %}
+            <a href="{{ url_for('book', competition=comp['name'], club=club['name']) }}">Book Places</a>
+          {% endif %}
         </li>
         <hr />
-        {% endfor %}
+      {% endfor %}
     </ul>
 </body>
 </html>
