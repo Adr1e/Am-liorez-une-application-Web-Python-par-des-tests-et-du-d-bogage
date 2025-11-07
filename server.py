@@ -1,105 +1,112 @@
 import json
 from typing import List, Dict, Optional
+from datetime import datetime  # needed to compare dates
 from flask import Flask, render_template, request, redirect, flash, url_for, jsonify
 
-# File paths for JSON data
 CLUBS_PATH = "clubs.json"
 COMPETITIONS_PATH = "competitions.json"
 
-
 def loadClubs(path: str = CLUBS_PATH) -> List[Dict]:
-    # Load clubs data from JSON
     with open(path) as f:
         data = json.load(f)
     return data.get("clubs", [])
 
-
 def loadCompetitions(path: str = COMPETITIONS_PATH) -> List[Dict]:
-    # Load competitions data from JSON
     with open(path) as f:
         data = json.load(f)
     return data.get("competitions", [])
 
-
 def saveClubs(clubs: List[Dict], path: str = CLUBS_PATH) -> None:
-    # Save updated clubs data
     with open(path, "w") as f:
         json.dump({"clubs": clubs}, f, indent=2)
 
-
 def saveCompetitions(competitions: List[Dict], path: str = COMPETITIONS_PATH) -> None:
-    # Save updated competitions data
     with open(path, "w") as f:
         json.dump({"competitions": competitions}, f, indent=2)
 
-
 def find_club(clubs: List[Dict], name_or_email: str) -> Optional[Dict]:
-    # Find a club by name or email
+    # Find by name or email
     key = name_or_email.strip().lower()
     for c in clubs:
         if c.get("name", "").lower() == key or c.get("email", "").lower() == key:
             return c
     return None
 
-
 def find_competition(competitions: List[Dict], name: str) -> Optional[Dict]:
-    # Find a competition by name
+    # Find by name
     key = name.strip().lower()
     for comp in competitions:
         if comp.get("name", "").lower() == key:
             return comp
     return None
 
-
 def as_int(value, default: int = 0) -> int:
-    # Safely convert a value to integer
+    # Safe int conversion
     try:
         return int(value)
     except Exception:
         return default
 
+def parse_competition_dt(value: str) -> Optional[datetime]:
+    # Parse date "YYYY-MM-DD HH:MM:SS"
+    try:
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return None
+
+def is_competition_past(comp: Dict) -> bool:
+    # True if date is in the past
+    dt = parse_competition_dt(comp.get("date", ""))
+    if not dt:
+        return True
+    return dt < datetime.now()
 
 app = Flask(__name__)
 app.secret_key = "something_special"
 
-# Load initial data
 competitions = loadCompetitions()
 clubs = loadClubs()
 
+def enrich_competitions_with_flags(items: List[Dict]) -> List[Dict]:
+    # Add "is_past" for UI decisions
+    enriched = []
+    for comp in items:
+        item = dict(comp)
+        item["is_past"] = is_competition_past(comp)
+        enriched.append(item)
+    return enriched
 
 @app.route("/")
 def index():
-    # Display home page
     return render_template("index.html")
-
 
 @app.route("/showSummary", methods=["POST"])
 def showSummary():
-    # Handle login and display club dashboard
+    # Login and show dashboard
     email = request.form.get("email", "").strip()
     club = find_club(clubs, email)
     if not club:
         flash("Unknown email.")
         return redirect(url_for("index"))
-    return render_template("welcome.html", club=club, competitions=competitions)
-
+    comps = enrich_competitions_with_flags(competitions)
+    return render_template("welcome.html", club=club, competitions=comps)
 
 @app.route("/book/<competition>/<club>")
 def book(competition, club):
-    # Open the booking page
+    # Open booking page if valid and not past
     foundClub = find_club(clubs, club)
     foundCompetition = find_competition(competitions, competition)
-    if foundClub and foundCompetition:
+    if foundClub and foundCompetition and not is_competition_past(foundCompetition):
         return render_template("booking.html", club=foundClub, competition=foundCompetition)
-    flash("Something went wrong, please try again.")
+    flash("Booking unavailable.")
     if foundClub:
-        return render_template("welcome.html", club=foundClub, competitions=competitions)
+        comps = enrich_competitions_with_flags(competitions)
+        return render_template("welcome.html", club=foundClub, competitions=comps)
     return redirect(url_for("index"))
-
 
 @app.route("/purchasePlaces", methods=["POST"])
 def purchasePlaces():
-    # Validate and process a booking
+    # Unchanged booking rules for bug 1 scope
     competition_name = request.form.get("competition", "")
     club_name = request.form.get("club", "")
     raw_places = request.form.get("places", "0")
@@ -110,6 +117,9 @@ def purchasePlaces():
     errors = []
     if not club or not competition:
         errors.append("Club or competition not found.")
+
+    if competition and is_competition_past(competition):
+        errors.append("Competition is in the past.")
 
     places_required = as_int(raw_places, default=0)
     if places_required <= 0:
@@ -126,31 +136,28 @@ def purchasePlaces():
         errors.append("Not enough points.")
 
     if errors:
-        # Display all error messages
         for msg in errors:
             flash(msg)
         if club:
-            return render_template("welcome.html", club=club, competitions=competitions)
+            comps = enrich_competitions_with_flags(competitions)
+            return render_template("welcome.html", club=club, competitions=comps)
         return redirect(url_for("index"))
 
-    # Apply booking changes
     competition["numberOfPlaces"] = str(remaining_places - places_required)
     club["points"] = str(club_points - places_required)
     saveCompetitions(competitions)
     saveClubs(clubs)
 
     flash("Great-booking complete!")
-    return render_template("welcome.html", club=club, competitions=competitions)
-
+    comps = enrich_competitions_with_flags(competitions)
+    return render_template("welcome.html", club=club, competitions=comps)
 
 @app.route("/points")
 def public_points():
-    # Show all clubs and their points (public endpoint)
+    # Public JSON list of clubs with points
     data = [{"name": c.get("name"), "points": as_int(c.get("points"), 0)} for c in clubs]
     return jsonify(data)
 
-
 @app.route("/logout")
 def logout():
-    # Logout and redirect to home
     return redirect(url_for("index"))
